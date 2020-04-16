@@ -24,7 +24,7 @@ def autolabel(rects):
 """ Starting the program """
 
 # Opening capute file:
-cap = pyshark.FileCapture('/Users/lucaferraro/Desktop/PoliMi/First_year/Wireless_networks/Wirelesss_internet/Project/MAC_count2.pcapng', 'r')#cap = pyshark.FileCapture('/Users/lucaferraro/Desktop/PoliMi/First_year/Wireless_networks/Wirelesss_internet/Laboratories/office_capture/office_capture.pcapng')
+cap = pyshark.FileCapture('/Users/lucaferraro/Desktop/PoliMi/First_year/Wireless_networks/Wirelesss_internet/Project/MAC_count2.pcapng', 'r')
 
 # Declaring used dictionary -> MAC: [downlinlk bytes, uplink bytes]
 mac = {} 
