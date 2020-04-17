@@ -11,10 +11,19 @@ import matplotlib
 
 
 """ This function attach a text label above each bar in *rects*, displaying its height. """
-def autolabel(rects):
+def autolabel1(rects):
     for rect in rects:
         height = rect.get_height()
         ax.annotate('{}'.format(height),
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+def autolabel2(rects):
+    for rect in rects:
+        height = rect.get_height()
+        ax2.annotate('{}'.format(height),
                     xy=(rect.get_x() + rect.get_width() / 2, height),
                     xytext=(0, 3),  # 3 points vertical offset
                     textcoords="offset points",
@@ -127,7 +136,7 @@ x = np.arange(len(mac_list))
 # Bar width:
 width = 0.35
 
-""" Preparing figure for bytes """
+### Preparing figure for bytes ###
 
 fig, ax = plt.subplots()
 rects1 = ax.bar(x - width/2, downlink, width, label='Downlink')
@@ -137,39 +146,35 @@ rects2 = ax.bar(x + width/2, uplink, width, label='Uplink')
 ax.set_ylabel('Bytes')
 ax.set_title('Bytes transmitted and received by each captured MAC address')
 ax.set_xticks(x)
-plt.xticks(rotation=90)
 ax.set_xticklabels(mac_list)
 ax.legend()
+plt.xticks(rotation=90)
 
 # Place the value of a bar directly above it:
-autolabel(rects1)
-autolabel(rects2)
+autolabel1(rects1)
+autolabel1(rects2)
 
 # Adapts the layout to the window:
 fig.tight_layout()
 
-# Shows the graph:
-plt.show()
 
-"""
-# Preparing figure for number of packets
+### Preparing figure for exchanged packets ###
 
-rects3 = ax[1].bar(x - width/2, downlink_pkt, width, label='Downlink packets')
-rects4 = ax[1].bar(x + width/2, uplink_pkt, width, label='Uplink packets')
+fig2, ax2 = plt.subplots()
+rects3 = ax2.bar(x - width/2, downlink_pkt, width, label='Downlink packets')
+rects4 = ax2.bar(x + width/2, uplink_pkt, width, label='Uplink packets')
 
-ax[1].set_ylabel('Number of packets')
-ax[1].set_title('Number of packets transmitted and received by each captured MAC address')
-ax[1].set_xticks(x)
+ax2.set_ylabel('Number of packets')
+ax2.set_title('Number of packet transmitted and received by each captured MAC address')
+ax2.set_xticks(x)
+ax2.set_xticklabels(mac_list)
+ax2.legend()
 plt.xticks(rotation=90)
 
-ax[1].set_xticklabels(mac_list)
-ax[1].legend()
+autolabel2(rects3)
+autolabel2(rects4)
 
-autolabel(rects3)
-autolabel(rects4)
+fig2.tight_layout()
 
-# Showing graphs:
-fig[1].tight_layout()
+### Showing both graphs ###
 plt.show()
-
-"""
