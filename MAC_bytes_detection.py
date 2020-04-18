@@ -8,10 +8,12 @@ import pyshark
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+import sys
+import time,os
 
 
 """ This function attach a text label above each bar in *rects*, displaying its height. """
-def autolabel1(rects):
+def autolabel(rects, ax):
     for rect in rects:
         height = rect.get_height()
         ax.annotate('{}'.format(height),
@@ -20,22 +22,45 @@ def autolabel1(rects):
                     textcoords="offset points",
                     ha='center', va='bottom')
 
-def autolabel2(rects):
-    for rect in rects:
-        height = rect.get_height()
-        ax2.annotate('{}'.format(height),
-                    xy=(rect.get_x() + rect.get_width() / 2, height),
-                    xytext=(0, 3),  # 3 points vertical offset
-                    textcoords="offset points",
-                    ha='center', va='bottom')
+""" This function activates a wireshark capture and uses it to run the program. """
+def capturePackets(duration):
+    seconds = int(duration)
+    if os.geteuid() != 0:
+        exit("You need to have root privileges to run this script")
+    plt.ion()
+    plt.show()
 
+    while 1:
+        #TODO: Sistemare il comando
+        os.system('(sudo tshark -Ini wlp3s0 -s 256 -f "type mgt subtype beacon" -w beacon.pcap)&')
+        time.sleep(seconds)
+        os.system('killall tshark')
+
+
+""" Checking command line parameters: if no special parameters are given, the program will run with out test capture, if the -file "PATH_TO_FILE"
+    arguments are given, the program will run on the given capture file, if the -live CAPTURE_DURATION_IN_SECONDS arguments are given the program 
+    will start capturing packets for the specified duration and then will execute the program on the captured packets. 
+    Otherwise the program will stop running"""
+
+if (len(sys.argv) == 1):
+    # cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
+    cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/old/MAC_count2.pcapng")
+
+elif (len(sys.argv) == 3):
+    if sys.argv[1] == "-file":
+        cap = pyshark.FileCapture(sys.argv[2])
+    elif sys.argv[1] == "-live":
+        capturePackets(sys.argv[2])
+
+else:
+    print("Invalid parameters: stopping execution...")
+    sys.exit()
+
+            
 
 """ Starting the program """
 
-# Opening capute file:
-cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
-
-# Declaring used dictionary -> MAC: [downlinlk B, uplink B, downlink Pkt, uplink pkt]
+# Declaring used dictionary -> MAC: [downlink B, uplink B, downlink Pkt, uplink pkt]
 mac = {} 
 
 # Count the bytes of data packets:
@@ -138,29 +163,23 @@ width = 0.35
 
 ### Preparing figure for bytes ###
 
-fig, ax = plt.subplots()
-rects1 = ax.bar(x - width/2, downlink, width, label='Downlink')
-rects2 = ax.bar(x + width/2, uplink, width, label='Uplink')
+fig, (ax1, ax2) = plt.subplots(1, 2)
+rects1 = ax1.bar(x - width/2, downlink, width, label='Downlink')
+rects2 = ax1.bar(x + width/2, uplink, width, label='Uplink')
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
-ax.set_ylabel('Bytes')
-ax.set_title('Bytes transmitted and received by each captured MAC address')
-ax.set_xticks(x)
-ax.set_xticklabels(mac_list)
-ax.legend()
-plt.xticks(rotation=90)
+ax1.set_ylabel('Bytes')
+ax1.set_title('Bytes transmitted and received by each captured MAC address')
+ax1.set_xticks(x)
+ax1.set_xticklabels(mac_list)
+ax1.legend()
+plt.setp(ax1.xaxis.get_majorticklabels(), rotation=90)
 
 # Place the value of a bar directly above it:
-autolabel1(rects1)
-autolabel1(rects2)
-
-# Adapts the layout to the window:
-fig.tight_layout()
-
+autolabel(rects1, ax1)
+autolabel(rects2, ax1)
 
 ### Preparing figure for exchanged packets ###
-
-fig2, ax2 = plt.subplots()
 rects3 = ax2.bar(x - width/2, downlink_pkt, width, label='Downlink packets')
 rects4 = ax2.bar(x + width/2, uplink_pkt, width, label='Uplink packets')
 
@@ -169,12 +188,17 @@ ax2.set_title('Number of packet transmitted and received by each captured MAC ad
 ax2.set_xticks(x)
 ax2.set_xticklabels(mac_list)
 ax2.legend()
-plt.xticks(rotation=90)
+plt.setp(ax2.xaxis.get_majorticklabels(), rotation=90)
 
-autolabel2(rects3)
-autolabel2(rects4)
 
-fig2.tight_layout()
+autolabel(rects3, ax2)
+autolabel(rects4, ax2)
+
+# Adapts the layout to the window and resize window:
+plt.subplots_adjust(bottom=0.20)
+F = plt.gcf()
+F.set_size_inches(18.5, 10.5, forward=True)
+
 
 ### Showing both graphs ###
 plt.show()
