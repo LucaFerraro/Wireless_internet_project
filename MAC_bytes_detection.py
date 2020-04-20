@@ -45,6 +45,7 @@ def capturePackets(duration):
 if (len(sys.argv) == 1):
     #cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Sunday_morning_capture_MILAN.pcapng')
+    cap = pyshark.FileCapture('Wireless_internet_project/Data_try.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Monday_afternoon_capture_try_LIVORNO.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_first2min.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_middle.pcapng')
@@ -77,15 +78,22 @@ nPacket_tx = 0
 nPacket_rx = 0
 nPacket = 0
 
+# Time the capture has last:
+t_capture = 0
+
 print("\nScanning the capture...\n")
 
 for packet in cap:
     
+    # Time the packet has been sniffed fromt the beginning of the sniff:
+    t_capture = packet.frame_info.time_relative
+    
     # Handles malformed packets:
     try: 
 
-        # Only if the it's a (QoS: 0x0028 -> 40) DATA (0x0020 -> 32) packet:
-        if(packet.wlan.fc_type_subtype == '40' or packet.wlan.fc_type_subtype == '32'):
+        # Entering only if data field but not no data filed:
+        if(packet.wlan.type == '2' and int(packet.wlan.subtype) >= 0 and int(packet.wlan.subtype) <= 3 
+            and int(packet.wlan.subtype) >= 8 and int(packet.wlan.subtype) <= 11):
 
             # Finding destination address MAC addess:
             rx = packet.wlan.ra
@@ -129,11 +137,21 @@ for packet in cap:
     except:
         pass
 
+# Writing info on average downlink and uplink rate as Bytes/(elapsed_time):
+for m in mac:
+    
+    # Avg downlink rate:
+    mac[m][4] = mac[m][0] / t_capture
+
+    # Avg uplink rate:
+    mac[m][5] = mac[m][2] / t_capture
+
+
 print("Revealed " + str(nData) + " bytes of data!\n")
 print("Total number of packet exchanged: " + str(nPacket))
 
 # Printing out the dictionary in the form MAC: [downlink bytes, uplink bytes]:
-print("MACs revealed and correspondent transmitted and received bytes:\n")
+print("\nMACs revealed and correspondent transmitted and received bytes:\n")
 for key, value in mac.items():
     print(key, ":", value)
 
@@ -184,6 +202,7 @@ autolabel(rects1, ax1)
 autolabel(rects2, ax1)
 
 ### Preparing figure for exchanged packets ###
+
 rects3 = ax2.bar(x - width/2, downlink_pkt, width, label='Downlink packets')
 rects4 = ax2.bar(x + width/2, uplink_pkt, width, label='Uplink packets')
 
@@ -194,7 +213,6 @@ ax2.set_xticklabels(mac_list)
 ax2.legend()
 plt.setp(ax2.xaxis.get_majorticklabels(), rotation=90)
 
-
 autolabel(rects3, ax2)
 autolabel(rects4, ax2)
 
@@ -202,7 +220,6 @@ autolabel(rects4, ax2)
 plt.subplots_adjust(bottom=0.20)
 F = plt.gcf()
 F.set_size_inches(18.5, 10.5, forward=True)
-
 
 ### Showing both graphs ###
 plt.show()
