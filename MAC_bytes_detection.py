@@ -141,10 +141,10 @@ for packet in cap:
 for m in mac:
     
     # Avg downlink rate:
-    mac[m][4] = mac[m][0] / t_capture
+    mac[m][4] = mac[m][0] / float(t_capture)
 
     # Avg uplink rate:
-    mac[m][5] = mac[m][2] / t_capture
+    mac[m][5] = mac[m][2] / float(t_capture)
 
 
 print("Revealed " + str(nData) + " bytes of data!\n")
