@@ -142,10 +142,10 @@ for packet in cap:
 for m in mac:
     
     # Avg downlink rate:
-    mac[m][4] = mac[m][0] / float(t_capture)
+    mac[m][4] = mac[m][0] * 8 / float(t_capture)
 
     # Avg uplink rate:
-    mac[m][5] = mac[m][2] / float(t_capture)
+    mac[m][5] = mac[m][2] * 8 / float(t_capture)
 
 
 print("Revealed " + str(nData) + " bytes of data!\n")
@@ -154,7 +154,14 @@ print("Total number of packet exchanged: " + str(nPacket))
 # Printing out the dictionary in the form MAC: [downlink bytes, uplink bytes]:
 print("\nMACs revealed and correspondent transmitted and received bytes:\n")
 for key, value in mac.items():
-    print(key, ":", value)
+    print(key, ":")
+    print("\tUplink Bytes", value[0])
+    print("\tUplink Packets", value[1])
+    print("\tDownlink Bytes", value[2])
+    print("\tDownlink Packets", value[3])
+    print("\tUplink Rate", value[4])
+    print("\tDownlink Rate", value[5])
+    print("\n")
 
 # List of all the MAC addresses revealed:
 mac_keys = mac.keys()
