@@ -43,8 +43,12 @@ def capturePackets(duration):
     Otherwise the program will stop running"""
 
 if (len(sys.argv) == 1):
-    # cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
-    cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/old/MAC_count2.pcapng")
+    #cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
+    #cap = pyshark.FileCapture('Wireless_internet_project/Sunday_morning_capture_MILAN.pcapng')
+    #cap = pyshark.FileCapture('Wireless_internet_project/Monday_afternoon_capture_try_LIVORNO.pcapng')
+    #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_first2min.pcapng')
+    #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_middle.pcapng')
+    #cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/old/MAC_count2.pcapng")
 
 elif (len(sys.argv) == 3):
     if sys.argv[1] == "-file":
