@@ -103,7 +103,7 @@ for packet in cap:
                 mac[rx][0] = mac[rx][0] + int(packet.data.len) # Number of downlink bytes 
                 mac[rx][2] = mac[rx][2] + 1                    # Number of downlink packets
             else:
-                mac.setdefault(rx, [int(packet.data.len), 0, 1, 0])
+                mac.setdefault(rx, [int(packet.data.len), 0, 1, 0, 0, 0])
             
             # Incrementing received data:
             nBytes_rx = int(packet.data.len)
@@ -119,7 +119,7 @@ for packet in cap:
                     mac[tx][1] = mac[tx][1] + int(packet.data.len) # Number of uplink bytes
                     mac[tx][3] = mac[tx][3] + 1                    # Number of uplink packets
                 else:
-                    mac.setdefault(tx, [0, int(packet.data.len), 0, 1])
+                    mac.setdefault(tx, [0, int(packet.data.len), 0, 1, 0, 0])
                 
                 # Incrementing transmitted data:
                 nBytes_tx = float(packet.data.len)
