@@ -40,7 +40,7 @@ def capturePackets(duration):
 """ Checking command line parameters: if no special parameters are given, the program will run with out test capture, if the -file "PATH_TO_FILE"
     arguments are given, the program will run on the given capture file, if the -live CAPTURE_DURATION_IN_SECONDS arguments are given the program 
     will start capturing packets for the specified duration and then will execute the program on the captured packets. 
-    Otherwise the program will stop running"""
+    Otherwise the program will stop running """
 
 if (len(sys.argv) == 1):
     #cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
@@ -93,8 +93,8 @@ for packet in cap:
 
         # Entering only if data (type = 2) but not no data:
         if((int(packet.wlan.type) == 2) and 
-            ((int(packet.wlan.subtype) >= 0 and int(packet.wlan.subtype) <= 3)) 
-            or (int(packet.wlan.subtype) >= 8 and int(packet.wlan.subtype) <= 11)):
+            ((int(packet.wlan.subtype) >= 0 and int(packet.wlan.subtype) <= 3)) or
+            (int(packet.wlan.subtype) >= 8 and int(packet.wlan.subtype) <= 11)):
 
             # Finding destination address MAC addess:
             rx = packet.wlan.ra
