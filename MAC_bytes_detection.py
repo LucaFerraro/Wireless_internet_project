@@ -92,9 +92,9 @@ for packet in cap:
     try: 
 
         # Entering only if data (type = 2) but not no data:
-        if((int(packet.wlan.type) == 2) and 
-            ((int(packet.wlan.subtype) >= 0 and int(packet.wlan.subtype) <= 3)) or
-            (int(packet.wlan.subtype) >= 8 and int(packet.wlan.subtype) <= 11)):
+        if((int(packet.wlan.fc_type) == 2) and 
+            ((int(packet.wlan.fc_subtype) >= 0 and int(packet.wlan.fc_subtype) <= 3)) or
+            (int(packet.wlan.fc_subtype) >= 8 and int(packet.wlan.fc_subtype) <= 11)):
 
             # Finding destination address MAC addess:
             rx = packet.wlan.ra
