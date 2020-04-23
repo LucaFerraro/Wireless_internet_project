@@ -69,8 +69,6 @@ else:
 mac = {} 
 
 # Count the bytes of data packets:
-nData_rx = 0
-nData_tx = 0
 nData = 0
 
 # Number of packet transmitted and received by each mac:
@@ -81,10 +79,20 @@ nPacket = 0
 # Time the capture has last:
 t_capture = 0
 
+# For cumulative traffic: each emelent of a list contains the cumulative traffic measured with interval of T seconds
+# meaning that the n-th element of the list contains the fraffic from time 0 to time n*T [s]:
+cum_traffic_in = []
+cum_traffic_out = []
+n = 0
+T = 30
+
+# Threshold for MAC revealing (for data printing):
+n_min_pkt = 20
+
 print("\nScanning the capture...\n")
 
 for packet in cap:
-    
+
     # Time the packet has been sniffed fromt the beginning of the sniff:
     t_capture = packet.frame_info.time_relative
     
@@ -95,6 +103,10 @@ for packet in cap:
         if((int(packet.wlan.fc_type) == 2) and 
             ((int(packet.wlan.fc_subtype) >= 0 and int(packet.wlan.fc_subtype) <= 3)) or
             (int(packet.wlan.fc_subtype) >= 8 and int(packet.wlan.fc_subtype) <= 11)):
+
+            # Bytes of packet:
+            nBytes_rx = 0
+            nBytes_tx = 0
 
             # Finding destination address MAC addess:
             rx = packet.wlan.ra
@@ -107,9 +119,19 @@ for packet in cap:
             
             # Incrementing received data:
             nBytes_rx = int(packet.data.len)
-            nData_rx = nData_rx + nBytes_rx
-            
+            nData = nData + nBytes_rx
             nPacket_rx = nPacket_rx + 1
+
+            # Updating cumulative downlink traffic:
+            if n == 0: # If first packet:
+                cum_traffic_in.append(nBytes_rx)
+                n = n + 1
+            
+            elif t_capture <= n * T: # If packet in ((n-1)T, nT]:
+                cum_traffic_out[-1] = cum_traffic_in[-1] + nBytes_rx
+
+            else: # If packet in (nT, (n+1)T]:
+                cum_traffic_in.append(cum_traffic_in[-1] + nBytes_rx)
 
             # Attempt to take the source address:
             try:
@@ -123,20 +145,34 @@ for packet in cap:
                 
                 # Incrementing transmitted data:
                 nBytes_tx = float(packet.data.len)
-                nData_tx = nData_tx + nBytes_tx
-
+                nData = nData + nBytes_tx
                 nPacket_tx = nPacket_tx + 1
-                
+
+                # Updating cumulative uplink traffic:
+                if n == 0: # If first packet:
+                    cum_traffic_in.append(nBytes_tx)
+                    n = n + 1
+            
+                elif t_capture <= n * T: # If packet in ((n-1)T, nT]:
+                    cum_traffic_out[-1] = cum_traffic_in[-1] + nBytes_tx
+
+                else: # If packet in (nT, (n+1)T]:
+                    cum_traffic_in.append(cum_traffic_in[-1] + nBytes_tx)
+            
+            # No source address in the packet, just skip:
             except:
                 pass
 
-            # Total data:
-            nData = nData_tx + nData_rx
-            nPacket = nPacket_tx + nPacket_rx
+            # If packet reception time in [nT, (n+1)T]:
+            if t_capture > n*T:
+                n = n + 1
 
-    # If problems, just skip:
+    # Packet malformed, just skip:
     except:
         pass
+
+# Tot number received packets:
+nPacket = nPacket_tx + nPacket_rx
 
 # Writing info on average downlink and uplink rate as Bytes/(elapsed_time):
 for m in mac:
@@ -148,10 +184,12 @@ for m in mac:
     mac[m][5] = mac[m][2] * 8 / float(t_capture)
 
 
-print("Revealed " + str(nData) + " bytes of data!\n")
-print("Total number of packet exchanged: " + str(nPacket))
+# Printing general info on the capture:
+print("Capture time: " + str(t_capture))
+print("Revealed " + str(nData) + " bytes of data.")
+print("Total number of packet exchanged: " + str(nPacket) + ".")
 
-# Printing out the dictionary in the form MAC: [downlink bytes, uplink bytes]:
+# Printing out the dictionary:
 print("\nMACs revealed and correspondent transmitted and received bytes:\n")
 for key, value in mac.items():
     print(key, ":")
@@ -163,12 +201,12 @@ for key, value in mac.items():
     print("\tDownlink Rate", value[5])
     print("\n")
 
-# List of all the MAC addresses revealed:
+# List of all the MAC addresses revealed; considers only MACss with a min number of tx and rx packets:
 mac_keys = mac.keys()
 mac_list = []
 for key in mac_keys:
-    mac_list.append(key)
-
+    if (mac[key][2] >= n_min_pkt) or (mac[key][3] >= n_min_pkt):
+        mac_list.append(key)
 
 # Bytes in downlink and uplink of each revealed MAC:
 downlink = []
@@ -178,12 +216,28 @@ uplink = []
 downlink_pkt = []
 uplink_pkt = []
 
-for m in mac:
+# Preparing lists for later plotting:
+for m in mac_list:
     downlink.append(mac[m][0])
     uplink.append(mac[m][1])
     downlink_pkt.append(mac[m][2])
     uplink_pkt.append(mac[m][3])
 
+# Lists for traffic exchanged every T seconds:
+traffic_out = []
+traffic_in = []
+
+# Preparing traffic lists:
+traffic_in.append(cum_traffic_in[0])
+for index in cum_traffic_in[1:]:
+    traffic_in.append(cum_traffic_in[index] - cum_traffic_in[index - 1])
+
+traffic_out.append(cum_traffic_out[0])
+for index in cum_traffic_out[1:]:
+    traffic_out.append(cum_traffic_out[index] - cum_traffic_out[index - 1])
+
+
+""" PREPARING FIGURES """
 
 # Label locations:
 x = np.arange(len(mac_list)) 
@@ -229,5 +283,5 @@ plt.subplots_adjust(bottom=0.20)
 F = plt.gcf()
 F.set_size_inches(18.5, 10.5, forward=True)
 
-### Showing both graphs ###
+### Showing the graphs ###
 plt.show()
