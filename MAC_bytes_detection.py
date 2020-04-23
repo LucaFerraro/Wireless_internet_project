@@ -185,7 +185,7 @@ for m in mac:
 
 
 # Printing general info on the capture:
-print("Capture time: " + str(t_capture))
+print("Capture time: " + str(t_capture) + ".")
 print("Revealed " + str(nData) + " bytes of data.")
 print("Total number of packet exchanged: " + str(nPacket) + ".")
 
@@ -193,12 +193,12 @@ print("Total number of packet exchanged: " + str(nPacket) + ".")
 print("\nMACs revealed and correspondent transmitted and received bytes:\n")
 for key, value in mac.items():
     print(key, ":")
-    print("\tUplink Bytes", value[0])
-    print("\tUplink Packets", value[1])
-    print("\tDownlink Bytes", value[2])
-    print("\tDownlink Packets", value[3])
-    print("\tUplink Rate", value[4])
-    print("\tDownlink Rate", value[5])
+    print("\tUplink Bytes", value[1])
+    print("\tUplink Packets", value[3])
+    print("\tDownlink Bytes", value[0])
+    print("\tDownlink Packets", value[2])
+    print("\tUplink Rate", value[5])
+    print("\tDownlink Rate", value[4])
     print("\n")
 
 # List of all the MAC addresses revealed; considers only MACss with a min number of tx and rx packets:
