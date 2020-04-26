@@ -11,6 +11,10 @@ import matplotlib
 import sys
 import time,os
 
+''' PARAMETERS '''
+TIME_WINDOW_CUMULATIVE_TRAFFIC = 30
+N_MIN_PKT = 20
+
 
 """ This function attach a text label above each bar in *rects*, displaying its height. """
 def autolabel(rects, ax):
@@ -79,21 +83,21 @@ nPacket = 0
 # Time the capture has last:
 t_capture = 0
 
-# For cumulative traffic: each emelent of a list contains the cumulative traffic measured with interval of T seconds
-# meaning that the n-th element of the list contains the fraffic from time 0 to time n*T [s]:
+# For cumulative traffic: each element of a list contains the cumulative traffic measured with interval of T seconds
+# meaning that the n-th element of the list contains the traffic from time 0 to time n*T [s]:
 cum_traffic_in = []
 cum_traffic_out = []
 n = 0
-T = 30
+T = TIME_WINDOW_CUMULATIVE_TRAFFIC
 
 # Threshold for MAC revealing (for data printing):
-n_min_pkt = 20
+n_min_pkt = N_MIN_PKT
 
 print("\nScanning the capture...\n")
 
 for packet in cap:
 
-    # Time the packet has been sniffed fromt the beginning of the sniff:
+    # Time the packet has been sniffed from the beginning of the sniff:
     t_capture = packet.frame_info.time_relative
     
     # Handles malformed packets:
@@ -128,7 +132,7 @@ for packet in cap:
                 n = n + 1
             
             elif t_capture <= n * T: # If packet in ((n-1)T, nT]:
-                cum_traffic_out[-1] = cum_traffic_in[-1] + nBytes_rx
+                cum_traffic_in[-1] = cum_traffic_in[-1] + nBytes_rx
 
             else: # If packet in (nT, (n+1)T]:
                 cum_traffic_in.append(cum_traffic_in[-1] + nBytes_rx)
@@ -150,14 +154,14 @@ for packet in cap:
 
                 # Updating cumulative uplink traffic:
                 if n == 0: # If first packet:
-                    cum_traffic_in.append(nBytes_tx)
+                    cum_traffic_out.append(nBytes_tx)
                     n = n + 1
             
                 elif t_capture <= n * T: # If packet in ((n-1)T, nT]:
-                    cum_traffic_out[-1] = cum_traffic_in[-1] + nBytes_tx
+                    cum_traffic_out[-1] = cum_traffic_out[-1] + nBytes_tx
 
                 else: # If packet in (nT, (n+1)T]:
-                    cum_traffic_in.append(cum_traffic_in[-1] + nBytes_tx)
+                    cum_traffic_out.append(cum_traffic_out[-1] + nBytes_tx)
             
             # No source address in the packet, just skip:
             except:
@@ -201,6 +205,9 @@ for key, value in mac.items():
     print("\tDownlink Rate", value[4])
     print("\n")
 
+print("\nCumulative traffic input:", cum_traffic_in)
+print("Cumulative traffic output:", cum_traffic_out)
+
 # List of all the MAC addresses revealed; considers only MACss with a min number of tx and rx packets:
 mac_keys = mac.keys()
 mac_list = []
@@ -227,14 +234,14 @@ for m in mac_list:
 traffic_out = []
 traffic_in = []
 
-# Preparing traffic lists:
-traffic_in.append(cum_traffic_in[0])
-for index in cum_traffic_in[1:]:
-    traffic_in.append(cum_traffic_in[index] - cum_traffic_in[index - 1])
+# # Preparing traffic lists:
+# traffic_in.append(cum_traffic_in[0])
+# for index in cum_traffic_in[1:]:
+#     traffic_in.append(cum_traffic_in[index] - cum_traffic_in[index - 1])
 
-traffic_out.append(cum_traffic_out[0])
-for index in cum_traffic_out[1:]:
-    traffic_out.append(cum_traffic_out[index] - cum_traffic_out[index - 1])
+# traffic_out.append(cum_traffic_out[0])
+# for index in cum_traffic_out[1:]:
+#     traffic_out.append(cum_traffic_out[index] - cum_traffic_out[index - 1])
 
 
 """ PREPARING FIGURES """
