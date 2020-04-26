@@ -12,8 +12,13 @@ import sys
 import time,os
 
 ''' PARAMETERS '''
-TIME_WINDOW_CUMULATIVE_TRAFFIC = 30
-PLOT_RATIO = 5/100
+
+# Used for counting the bytes tr/rx over time.
+TIME_WINDOW_CUMULATIVE_TRAFFIC = 30 
+
+# Used for plotting: considering only MACs that have rx or tx at least this percentage
+# of the max number of packets tx/tx:
+PLOT_RATIO = 1/100
 
 
 """ This function attach a text label above each bar in *rects*, displaying its height. """
@@ -53,7 +58,8 @@ if (len(sys.argv) == 1):
     #cap = pyshark.FileCapture('Wireless_internet_project/Monday_afternoon_capture_try_LIVORNO.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_first2min.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_middle.pcapng')
-    cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng")
+    cap = pyshark.FileCapture('Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng')
+    #cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng")
 
 elif (len(sys.argv) == 3):
     if sys.argv[1] == "-file":
@@ -65,7 +71,6 @@ else:
     print("Invalid parameters: stopping execution...")
     sys.exit()
 
-            
 
 """ Starting the program """
 
@@ -147,13 +152,14 @@ for packet in cap:
             # No source address in the packet, just skip:
             except:
                 pass
-
-            if (t_capture >= n*T):
+            
+            # Updating traffic curve:
+            if (t_capture >= n*T): # if t_capture in [(n+1)T, (n+2)T]
                 traffic_in.append(nBytes_rx)
                 traffic_out.append(nBytes_tx)
                 n = n + 1
 
-            else:
+            else: # if t_capture in [nT, (n+1)T]
                 traffic_in[n-1] = traffic_in[n-1] + nBytes_rx
                 traffic_out[n-1] = traffic_out[n-1] + nBytes_tx
 
@@ -192,16 +198,21 @@ for key, value in mac.items():
     print("\tDownlink Rate", value[4])
     print("\n")
 
-
-# List of all the MAC addresses revealed; considers only MACss with a min number of tx and rx packets:
-mac_keys = mac.keys()
-mac_list = []
+# Finding max number of packets tx/rx (for plotting data):
+down_pkts = [] # List of rx packets from all the revealed MACs.
+up_pkts = []   # List of tx packets from all the revealed MACs.
 for i in mac.values():
-    up_pkts = i[3]
-    down_pkts = i[2]
+    down_pkts.append(i[2])
+    up_pkts.append(i[3])
 
+# Joining the two lists and finding the max value:
 pkts = up_pkts + down_pkts
 max_pkts = max(pkts)
+
+# List of all the MAC addresses revealed. c
+# Considers only MACs with a number of tx or rx packets >= of a percentage of the max tx/rx packets:
+mac_keys = mac.keys()
+mac_list = []
 
 for key in mac_keys:
     if (mac[key][2] >= max_pkts*plot_ratio) or (mac[key][3] >= max_pkts*plot_ratio):
@@ -281,40 +292,43 @@ F.set_size_inches(18.5, 10.5, forward=True)
 
 
 """ TRAFFIC GRAPHS """
+
+# Horizontal axis:
 time_axis = []
 for i in range(0, len(cum_traffic_in)):
     time_axis.append(TIME_WINDOW_CUMULATIVE_TRAFFIC*i)
 
-fig2, (plt1, plt2) = plt.subplots(1,2)
+### Received traffic ###
+fig_in, (plt_cum_in, plt_in) = plt.subplots(1,2)
 
-plt1.plot(time_axis, cum_traffic_in)
-plt1.set_ylabel('Bytes')
-plt1.set_title('Cumulative traffic received')
-plt1.set_xlabel('Time [s]')
+plt_cum_in.plot(time_axis, cum_traffic_in)
+plt_cum_in.set_xlabel('Time [s]')
+plt_cum_in.set_ylabel('Bytes')
+plt_cum_in.set_title('Cumulative traffic received')
 
-plt2.plot(time_axis, traffic_in)
-plt2.set_ylabel('Bytes')
-plt2.set_title('Received traffic trend')
-plt2.set_xlabel('Time [s]')
+plt_in.plot(time_axis, traffic_in)
+plt_in.set_xlabel('Time [s]')
+plt_in.set_ylabel('Bytes')
+plt_in.set_title('Received traffic trend')
 
-F2 = plt.gcf()
-F2.set_size_inches(18.5, 10.5, forward=True)
+F_IN = plt.gcf()
+F_IN.set_size_inches(18.5, 10.5, forward=True)
 
+### Transmitted traffic ###
+fig_out, (plt_cum_out, plt_out) = plt.subplots(1,2)
 
-fig3, (plt3, plt4) = plt.subplots(1,2)
+plt_cum_out.plot(time_axis, cum_traffic_out)
+plt_cum_out.set_xlabel('Time [s]')
+plt_cum_out.set_ylabel('Bytes')
+plt_cum_out.set_title('Cumulative traffic transmitted')
 
-plt3.plot(time_axis, cum_traffic_out)
-plt3.set_ylabel('Bytes')
-plt3.set_title('Cumulative traffic transmitted')
-plt3.set_xlabel('Time [s]')
+plt_out.plot(time_axis, traffic_out)
+plt_out.set_xlabel('Time [s]')
+plt_out.set_ylabel('Bytes')
+plt_out.set_title('Transmitted traffic trend')
 
-plt4.plot(time_axis, traffic_out)
-plt4.set_ylabel('Bytes')
-plt4.set_title('Transmitted traffic trend')
-plt4.set_xlabel('Time [s]')
+F_OUT = plt.gcf()
+F_OUT.set_size_inches(18.5, 10.5, forward=True)
 
-F3 = plt.gcf()
-F3.set_size_inches(18.5, 10.5, forward=True)
-
-### Showing the graphs ###
+""" SHOWING ALL GRAPHS """
 plt.show()
