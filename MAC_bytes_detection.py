@@ -13,7 +13,7 @@ import time,os
 
 ''' PARAMETERS '''
 TIME_WINDOW_CUMULATIVE_TRAFFIC = 30
-N_MIN_PKT = 5
+PLOT_RATIO = 5/100
 
 
 """ This function attach a text label above each bar in *rects*, displaying its height. """
@@ -94,7 +94,7 @@ n = 0
 T = TIME_WINDOW_CUMULATIVE_TRAFFIC
 
 # Threshold for MAC revealing (for data printing):
-n_min_pkt = N_MIN_PKT
+plot_ratio = PLOT_RATIO
 
 print("\nScanning the capture...\n")
 
@@ -196,8 +196,15 @@ for key, value in mac.items():
 # List of all the MAC addresses revealed; considers only MACss with a min number of tx and rx packets:
 mac_keys = mac.keys()
 mac_list = []
+for i in mac.values():
+    up_pkts = i[3]
+    down_pkts = i[2]
+
+pkts = up_pkts + down_pkts
+max_pkts = max(pkts)
+
 for key in mac_keys:
-    if (mac[key][2] >= n_min_pkt) or (mac[key][3] >= n_min_pkt):
+    if (mac[key][2] >= max_pkts*plot_ratio) or (mac[key][3] >= max_pkts*plot_ratio):
         mac_list.append(key)
 
 # Bytes in downlink and uplink of each revealed MAC:
