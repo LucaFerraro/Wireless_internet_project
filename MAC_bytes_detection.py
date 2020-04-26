@@ -32,16 +32,19 @@ def autolabel(rects, ax):
                     ha='center', va='bottom')
 
 """ This function activates a wireshark capture and uses it to run the program. """
-def capturePackets(duration):
+def capturePackets(interface, duration):
     seconds = int(duration)
+    capture_filter = "type data and (subtype data or subtype data-cf-poll or subtype data-cf-ack-poll or subtype qos-data or subtype qos-data-cf-ack or subtype qos-data-cf-poll or subtype qos-data-cf-ack-poll)"
     if os.geteuid() != 0:
         exit("You need to have root privileges to run this script")
     plt.ion()
     plt.show()
+    command = 'sudo tshark -Ini ' + interface + ' -f "' + capture_filter + '" -w live_capture.pcap'
+    print(command)
 
     while 1:
         #TODO: Sistemare il comando
-        os.system('(sudo tshark -Ini wlp3s0 -s 256 -f "type mgt subtype beacon" -w beacon.pcap)&')
+        os.system(command)
         time.sleep(seconds)
         os.system('killall tshark')
 
@@ -58,14 +61,16 @@ if (len(sys.argv) == 1):
     #cap = pyshark.FileCapture('Wireless_internet_project/Monday_afternoon_capture_try_LIVORNO.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_first2min.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_middle.pcapng')
-    cap = pyshark.FileCapture('Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng')
-    #cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng")
+    #cap = pyshark.FileCapture('Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng')
+    cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng")
 
 elif (len(sys.argv) == 3):
     if sys.argv[1] == "-file":
         cap = pyshark.FileCapture(sys.argv[2])
-    elif sys.argv[1] == "-live":
-        capturePackets(sys.argv[2])
+
+elif(len(sys.argv) == 4):
+    if sys.argv[1] == "-live":
+        cap = capturePackets(sys.argv[2], sys.argv[3])
 
 else:
     print("Invalid parameters: stopping execution...")
@@ -81,8 +86,6 @@ mac = {}
 nData = 0
 
 # Number of packet transmitted and received by each mac:
-nPacket_tx = 0
-nPacket_rx = 0
 nPacket = 0
 
 # Time the capture has last:
@@ -131,8 +134,6 @@ for packet in cap:
             
             # Incrementing received data:
             nBytes_rx = int(packet.data.len)
-            nData = nData + nBytes_rx
-            nPacket_rx = nPacket_rx + 1
 
             # Attempt to take the source address:
             try:
@@ -146,8 +147,6 @@ for packet in cap:
                 
                 # Incrementing transmitted data:
                 nBytes_tx = int(packet.data.len)
-                nData = nData + nBytes_tx
-                nPacket_tx = nPacket_tx + 1
             
             # No source address in the packet, just skip:
             except:
@@ -163,13 +162,16 @@ for packet in cap:
                 traffic_in[n-1] = traffic_in[n-1] + nBytes_rx
                 traffic_out[n-1] = traffic_out[n-1] + nBytes_tx
 
+            nData = nData + nBytes_rx
+            nPacket = nPacket + 1
+
 
     # Packet malformed, just skip:
     except:
         pass
 
 # Tot number received packets:
-nPacket = nPacket_tx + nPacket_rx
+
 
 # Writing info on average downlink and uplink rate as Bytes/(elapsed_time):
 for m in mac:
