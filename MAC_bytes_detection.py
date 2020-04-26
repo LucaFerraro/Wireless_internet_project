@@ -13,7 +13,7 @@ import time,os
 
 ''' PARAMETERS '''
 TIME_WINDOW_CUMULATIVE_TRAFFIC = 30
-N_MIN_PKT = 20
+N_MIN_PKT = 5
 
 
 """ This function attach a text label above each bar in *rects*, displaying its height. """
@@ -49,11 +49,11 @@ def capturePackets(duration):
 if (len(sys.argv) == 1):
     #cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Sunday_morning_capture_MILAN.pcapng')
-    cap = pyshark.FileCapture('Wireless_internet_project/Data_try.pcapng')
+    #cap = pyshark.FileCapture('Wireless_internet_project/Data_try.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Monday_afternoon_capture_try_LIVORNO.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_first2min.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_middle.pcapng')
-    #cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/old/MAC_count2.pcapng")
+    cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng")
 
 elif (len(sys.argv) == 3):
     if sys.argv[1] == "-file":
@@ -85,6 +85,9 @@ t_capture = 0
 
 # For cumulative traffic: each element of a list contains the cumulative traffic measured with interval of T seconds
 # meaning that the n-th element of the list contains the traffic from time 0 to time n*T [s]:
+# Lists for traffic exchanged every T seconds:
+traffic_out = []
+traffic_in = []
 cum_traffic_in = []
 cum_traffic_out = []
 n = 0
@@ -98,7 +101,7 @@ print("\nScanning the capture...\n")
 for packet in cap:
 
     # Time the packet has been sniffed from the beginning of the sniff:
-    t_capture = packet.frame_info.time_relative
+    t_capture = float(packet.frame_info.time_relative)
     
     # Handles malformed packets:
     try: 
@@ -126,17 +129,6 @@ for packet in cap:
             nData = nData + nBytes_rx
             nPacket_rx = nPacket_rx + 1
 
-            # Updating cumulative downlink traffic:
-            if n == 0: # If first packet:
-                cum_traffic_in.append(nBytes_rx)
-                n = n + 1
-            
-            elif t_capture <= n * T: # If packet in ((n-1)T, nT]:
-                cum_traffic_in[-1] = cum_traffic_in[-1] + nBytes_rx
-
-            else: # If packet in (nT, (n+1)T]:
-                cum_traffic_in.append(cum_traffic_in[-1] + nBytes_rx)
-
             # Attempt to take the source address:
             try:
                 tx = packet.wlan.sa
@@ -148,28 +140,23 @@ for packet in cap:
                     mac.setdefault(tx, [0, int(packet.data.len), 0, 1, 0, 0])
                 
                 # Incrementing transmitted data:
-                nBytes_tx = float(packet.data.len)
+                nBytes_tx = int(packet.data.len)
                 nData = nData + nBytes_tx
                 nPacket_tx = nPacket_tx + 1
-
-                # Updating cumulative uplink traffic:
-                if n == 0: # If first packet:
-                    cum_traffic_out.append(nBytes_tx)
-                    n = n + 1
-            
-                elif t_capture <= n * T: # If packet in ((n-1)T, nT]:
-                    cum_traffic_out[-1] = cum_traffic_out[-1] + nBytes_tx
-
-                else: # If packet in (nT, (n+1)T]:
-                    cum_traffic_out.append(cum_traffic_out[-1] + nBytes_tx)
             
             # No source address in the packet, just skip:
             except:
                 pass
 
-            # If packet reception time in [nT, (n+1)T]:
-            if t_capture > n*T:
+            if (t_capture >= n*T):
+                traffic_in.append(nBytes_rx)
+                traffic_out.append(nBytes_tx)
                 n = n + 1
+
+            else:
+                traffic_in[n-1] = traffic_in[n-1] + nBytes_rx
+                traffic_out[n-1] = traffic_out[n-1] + nBytes_tx
+
 
     # Packet malformed, just skip:
     except:
@@ -205,8 +192,6 @@ for key, value in mac.items():
     print("\tDownlink Rate", value[4])
     print("\n")
 
-print("\nCumulative traffic input:", cum_traffic_in)
-print("Cumulative traffic output:", cum_traffic_out)
 
 # List of all the MAC addresses revealed; considers only MACss with a min number of tx and rx packets:
 mac_keys = mac.keys()
@@ -230,21 +215,18 @@ for m in mac_list:
     downlink_pkt.append(mac[m][2])
     uplink_pkt.append(mac[m][3])
 
-# Lists for traffic exchanged every T seconds:
-traffic_out = []
-traffic_in = []
 
-# # Preparing traffic lists:
-# traffic_in.append(cum_traffic_in[0])
-# for index in cum_traffic_in[1:]:
-#     traffic_in.append(cum_traffic_in[index] - cum_traffic_in[index - 1])
+# Preparing cumulative traffic lists:
+cum_traffic_in.append(traffic_in[0])
+for index in range(1,len(traffic_in)):
+    cum_traffic_in.append(traffic_in[index] + cum_traffic_in[index - 1])
 
-# traffic_out.append(cum_traffic_out[0])
-# for index in cum_traffic_out[1:]:
-#     traffic_out.append(cum_traffic_out[index] - cum_traffic_out[index - 1])
+cum_traffic_out.append(traffic_out[0])
+for index in range(1,len(traffic_out)):
+    cum_traffic_out.append(traffic_out[index] + cum_traffic_out[index - 1])
 
 
-""" PREPARING FIGURES """
+""" BYTES AND PACKETS GRAPHS """
 
 # Label locations:
 x = np.arange(len(mac_list)) 
@@ -289,6 +271,43 @@ autolabel(rects4, ax2)
 plt.subplots_adjust(bottom=0.20)
 F = plt.gcf()
 F.set_size_inches(18.5, 10.5, forward=True)
+
+
+""" TRAFFIC GRAPHS """
+time_axis = []
+for i in range(0, len(cum_traffic_in)):
+    time_axis.append(TIME_WINDOW_CUMULATIVE_TRAFFIC*i)
+
+fig2, (plt1, plt2) = plt.subplots(1,2)
+
+plt1.plot(time_axis, cum_traffic_in)
+plt1.set_ylabel('Bytes')
+plt1.set_title('Cumulative traffic received')
+plt1.set_xlabel('Time [s]')
+
+plt2.plot(time_axis, traffic_in)
+plt2.set_ylabel('Bytes')
+plt2.set_title('Received traffic trend')
+plt2.set_xlabel('Time [s]')
+
+F2 = plt.gcf()
+F2.set_size_inches(18.5, 10.5, forward=True)
+
+
+fig3, (plt3, plt4) = plt.subplots(1,2)
+
+plt3.plot(time_axis, cum_traffic_out)
+plt3.set_ylabel('Bytes')
+plt3.set_title('Cumulative traffic transmitted')
+plt3.set_xlabel('Time [s]')
+
+plt4.plot(time_axis, traffic_out)
+plt4.set_ylabel('Bytes')
+plt4.set_title('Transmitted traffic trend')
+plt4.set_xlabel('Time [s]')
+
+F3 = plt.gcf()
+F3.set_size_inches(18.5, 10.5, forward=True)
 
 ### Showing the graphs ###
 plt.show()
