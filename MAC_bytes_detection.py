@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Attempt to detect the MAC addresses revealerd after sniffing in monitor mode. 
+# Attempt to detect the MAC addresses revealed after sniffing in monitor mode. 
 # MACs are added in a dictionary that has MACs themselves as key and many 
 # statistics for each MAC
 
 import pyshark
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, itertools
 import matplotlib
 import sys
 import time,os
@@ -17,9 +17,19 @@ import time,os
 TIME_WINDOW_CUMULATIVE_TRAFFIC = 30 
 
 # Used for plotting: considering only MACs that have rx or tx at least this percentage
-# of the max number of packets tx/tx:
+# of the max number of packets tx/tx. 0 will plot all the registered MACs:
 PLOT_RATIO = 1/100
 
+""" Loading MAC Vendors list """
+#load vendor list from file: the first 3 bytes of each MAC address are assigned to the manufacturer.
+f = open(os.path.join(sys.path[0],'oui2.txt'),'r')
+vendor_mac = []
+vendor_name = []
+for line in f:
+    if "(base 16)" in line:
+        fields = line.split("\t")
+        vendor_mac.append(fields[0][0:6])
+        vendor_name.append(fields[2])
 
 """ This function attach a text label above each bar in *rects*, displaying its height. """
 def autolabel(rects, ax):
@@ -39,7 +49,7 @@ def capturePackets(interface, duration):
         exit("You need to have root privileges to run this script")
     plt.ion()
     plt.show()
-    command = 'sudo tshark -Ini ' + interface + ' -f "' + capture_filter + '" -w live_capture.pcap'
+    command = 'sudo tshark -Ini ' + interface + ' -f ' + capture_filter + ' -w live_capture.pcap'
     print(command)
 
     while 1:
@@ -48,12 +58,31 @@ def capturePackets(interface, duration):
         time.sleep(seconds)
         os.system('killall tshark')
 
+""" This function allows to find out the vendor associated to the input MAC address """
+def convertMACAddress(mac):
+    #search first 3 bytes of mac in vendor_mac
+    red_mac = mac[0:8].upper()
+    red_mac = red_mac.replace(':','')
+    #get the corresponding vendor or unkown
+    try:
+        index = vendor_mac.index(red_mac)
+    except ValueError:
+        index = -1
+    #increment the corresponding bin
+    if index!=-1:
+        v_name = vendor_name[index]
+    else:
+        v_name = "unknown \n"
+
+    return v_name
+
 
 """ Checking command line parameters: if no special parameters are given, the program will run with out test capture, if the -file "PATH_TO_FILE"
     arguments are given, the program will run on the given capture file, if the -live CAPTURE_DURATION_IN_SECONDS arguments are given the program 
     will start capturing packets for the specified duration and then will execute the program on the captured packets. 
     Otherwise the program will stop running """
 
+# if no additional arguments are provided it will run a default capture (testing purposes)
 if (len(sys.argv) == 1):
     #cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Sunday_morning_capture_MILAN.pcapng')
@@ -62,12 +91,14 @@ if (len(sys.argv) == 1):
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_first2min.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_middle.pcapng')
     #cap = pyshark.FileCapture('Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng')
-    cap = pyshark.FileCapture("/home/fabio/Scrivania/Wireless Internet/Progetto/Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng")
+    cap = pyshark.FileCapture(os.path.join(sys.path[0],"Filtered_capture_WEDNESDAY_MILAN.pcapng"))
 
+# if -file "PATH TO FILE" is provided, the program will launch the program on the provided capture
 elif (len(sys.argv) == 3):
     if sys.argv[1] == "-file":
         cap = pyshark.FileCapture(sys.argv[2])
 
+# if -live "INTERFACE" "DURATION" is provided, the program will start a live capture with the given data and will analyze it
 elif(len(sys.argv) == 4):
     if sys.argv[1] == "-live":
         cap = capturePackets(sys.argv[2], sys.argv[3])
@@ -191,6 +222,7 @@ print("Total number of packet exchanged: " + str(nPacket) + ".")
 # Printing out the dictionary:
 print("\nMACs revealed and correspondent transmitted and received bytes:\n")
 for key, value in mac.items():
+    print("Vendor: " + convertMACAddress(key))
     print(key, ":")
     print("\tUplink Bytes", value[1])
     print("\tUplink Packets", value[3])
