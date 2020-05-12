@@ -221,16 +221,24 @@ print("Total number of packet exchanged: " + str(nPacket) + ".")
 
 # Printing out the dictionary:
 print("\nMACs revealed and correspondent transmitted and received bytes:\n")
+unknown_vendors = []
 for key, value in mac.items():
-    print("Vendor: " + convertMACAddress(key))
-    print(key, ":")
-    print("\tUplink Bytes", value[1])
-    print("\tUplink Packets", value[3])
-    print("\tDownlink Bytes", value[0])
-    print("\tDownlink Packets", value[2])
-    print("\tUplink Rate", value[5])
-    print("\tDownlink Rate", value[4])
-    print("\n")
+    vendor = convertMACAddress(key)
+    if vendor == "unknown \n":
+        unknown_vendors.append(key)
+    else:
+        print("Vendor: " + vendor)
+        print(key, ":")
+        print("\tUplink Bytes", value[1])
+        print("\tUplink Packets", value[3])
+        print("\tDownlink Bytes", value[0])
+        print("\tDownlink Packets", value[2])
+        print("\tUplink Rate", value[5])
+        print("\tDownlink Rate", value[4])
+        print("\n")
+
+print("MAC addresses with unknown vendor: ")
+print(unknown_vendors)
 
 # Finding max number of packets tx/rx (for plotting data):
 down_pkts = [] # List of rx packets from all the revealed MACs.
