@@ -10,4 +10,5 @@
 *.vscode
 *.out
 *.lols
-*.DS_Store
+*.DS_Stor
+*.lol
