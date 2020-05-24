@@ -48,7 +48,7 @@ effectively print those curves we had to divide the time in discrete intervals o
 check if the \texttt{packet.frame\_info.time\_relative} was inside the current interval. If the
 interval is correct, the counters are updated, otherwise a new time slot is created.
 
-\begin{lstlisting}[language=Python, caption=Packet filter]
+\begin{lstlisting}[language=Python, caption=Traffic curves setup]
     # Updating traffic curve:
     if (t_capture >= n*T): # if t_capture in [(n+1)T, (n+2)T]
         traffic_in.append(nBytes_rx)
