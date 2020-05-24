@@ -320,12 +320,6 @@ plt.setp(ax2.xaxis.get_majorticklabels(), rotation=90)
 autolabel(rects3, ax2)
 autolabel(rects4, ax2)
 
-# Adapts the layout to the window and resize window:
-plt.subplots_adjust(bottom=0.20)
-F = plt.gcf()
-F.set_size_inches(18.5, 10.5, forward=True)
-
-
 """ TRAFFIC GRAPHS """
 
 # Horizontal axis:
@@ -346,9 +340,6 @@ plt_in.set_xlabel('Time [s]')
 plt_in.set_ylabel('Bytes')
 plt_in.set_title('Received traffic trend')
 
-F_IN = plt.gcf()
-F_IN.set_size_inches(18.5, 10.5, forward=True)
-
 ### Transmitted traffic ###
 fig_out, (plt_cum_out, plt_out) = plt.subplots(1, 2, figsize=(15,8))
 
@@ -361,9 +352,6 @@ plt_out.plot(time_axis, traffic_out)
 plt_out.set_xlabel('Time [s]')
 plt_out.set_ylabel('Bytes')
 plt_out.set_title('Transmitted traffic trend')
-
-F_OUT = plt.gcf()
-F_OUT.set_size_inches(18.5, 10.5, forward=True)
 
 """ SHOWING ALL GRAPHS """
 plt.show()
