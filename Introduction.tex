@@ -1,0 +1,35 @@
+The aim of this project is using the protocol analyzer \textit{Wireshark} for classifying traffic at \textit{MAC} layer.\\ 
+To reach this goal, we used \textit{Wireshark} in \textit{monitor\ mode}: in this mode, the \textit{WiFi} module of our PC
+intercepts all the traffic in range that is transiting via \textit{WiFi}.\\ 
+This is a limitation is the sense that at \textit{MAC} layer it's possible to check whether a frame is transporting data, but it's not 
+possible to distinguish the application that has generated the data carried in the payload of the frame. Therefore, our 
+analysis only provides a quantitative estimation of the traffic of data transported over \textit{WiFi}. The reason why we have 
+used this solution even if we were aware of this fact is that working in \textit{monitor\ mode} is the only solution we had
+to sniff traffic that was not meant only for the computer that was performing the capure.\\
+
+\subsection{{Our analysis.}}
+    In this project, what we have done is looking at the \textit{data} and \textit{QoS data} frames captured by our computers and
+    try to understand what those packets are meant to in terms of type of application that has generated them. As specified, this 
+    can only be a deduction: we can't be sure of the application that has generated a packet at \textit{MAC} layer.\\ 
+    To do this we have scanned many sample captures and for each one of them:
+    \begin{enumerate}
+        \item Found all the \textit{MAC} addresses that have generated/received at least one \textit{data/QoS\ data} frame.
+        \item Associated to all the \textit{MAC} addresses we have revealed:
+        \begin{itemize}
+            \item The number of transmitted/received bytes.
+            \item The number of transmitted/received packets.
+            \item The average uplink/downlink rate.
+        \end{itemize}
+        \item Found the vendor associated with the \textit{MAC} address.
+    \end{enumerate}
+    In order to analyze the captured traffic and try to understand the type of application a user (so a \textit{MAC}) was using,
+    we have plotted: 
+    \begin{itemize}
+        \item A pair of histograms (one for the bytes, one for the number of packets) in which there is a bar for each
+                \textit{MAC} address that have generated/received at least a certain amount of packets (better description of
+                this later on).
+        \item A graph for the cumulative uplink/downlink traffic (considering then all the bytes generated/received by all the 
+                revealed \textit{MACs}).
+        \item A graph for the discrete traffic in uplink/downlink, that is the total amount of bytes exchanged by all the revealed
+                \textit{MACs} in a fixed time interval (customizable in the program).
+    \end{itemize}
