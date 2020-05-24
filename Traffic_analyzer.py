@@ -289,7 +289,7 @@ width = 0.35
 
 ### Preparing figure for bytes ###
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15,8))
 rects1 = ax1.bar(x - width/2, downlink, width, label='Downlink')
 rects2 = ax1.bar(x + width/2, uplink, width, label='Uplink')
 
@@ -334,7 +334,7 @@ for i in range(0, len(cum_traffic_in)):
     time_axis.append(TIME_WINDOW_CUMULATIVE_TRAFFIC*i)
 
 ### Received traffic ###
-fig_in, (plt_cum_in, plt_in) = plt.subplots(1,2)
+fig_in, (plt_cum_in, plt_in) = plt.subplots(1, 2, figsize=(15,8))
 
 plt_cum_in.plot(time_axis, cum_traffic_in)
 plt_cum_in.set_xlabel('Time [s]')
@@ -350,7 +350,7 @@ F_IN = plt.gcf()
 F_IN.set_size_inches(18.5, 10.5, forward=True)
 
 ### Transmitted traffic ###
-fig_out, (plt_cum_out, plt_out) = plt.subplots(1,2)
+fig_out, (plt_cum_out, plt_out) = plt.subplots(1, 2, figsize=(15,8))
 
 plt_cum_out.plot(time_axis, cum_traffic_out)
 plt_cum_out.set_xlabel('Time [s]')
