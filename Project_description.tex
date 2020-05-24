@@ -29,12 +29,48 @@ useful the following filter is used:
 
 \begin{lstlisting}[language=Python, caption=Packet filter]
     (int(packet.wlan.fc_type) == 2) and 
-    ((int(packet.wlan.fc_subtype) >= 0 and 
-        int(packet.wlan.fc_subtype) <= 3)) or
-    (int(packet.wlan.fc_subtype) >= 8 and 
-    int(packet.wlan.fc_subtype) <= 11)
+        ((int(packet.wlan.fc_subtype) >= 0 and 
+            int(packet.wlan.fc_subtype) <= 3)) or
+        (int(packet.wlan.fc_subtype) >= 8 and 
+        int(packet.wlan.fc_subtype) <= 11)
+\end{lstlisting}
+it will select all the \textbf{data} frames (\texttt{wlan.fc\_type == 2}) and among those it will 
+select the ones actually containing data or QoS data excluding null packets or ACKs. From 
+those packets it will extract the destination address and will add it to a dictionary
+which will store the number of bytes extracted from the \texttt{packet.data.len} and 
+the number of packets received and transmitted by this MAC during the capture.
+Then it will try to extract, if present, the source address and store information the same 
+way. During the development phase we noticed that the source address (\texttt{wlan.packet.sa}) was 
+not always present so we decided to check if it was present in order to avoid errors.
+
+Before the end of the loop, the lists for the cumulative traffic curves are updated. To 
+effectively print those curves we had to divide the time in discrete intervals of length T and 
+check if the \texttt{packet.frame\_info.time\_relative} was inside the current interval. If the
+interval is correct, the counters are updated, otherwise a new time slot is created.
+
+\begin{lstlisting}[language=Python, caption=Packet filter]
+    # Updating traffic curve:
+    if (t_capture >= n*T): # if t_capture in [(n+1)T, (n+2)T]
+        traffic_in.append(nBytes_rx)
+        traffic_out.append(nBytes_tx)
+        n = n + 1
+
+    else: # if t_capture in [nT, (n+1)T]
+        traffic_in[n-1] = traffic_in[n-1] + nBytes_rx
+        traffic_out[n-1] = traffic_out[n-1] + nBytes_tx
+
+    nData = nData + nBytes_rx
+    nPacket = nPacket + 1
 \end{lstlisting}
 
-it will select all the \textbf{data} frames (wlan.fc\_type == 2) and among those it will 
-select the ones actually containing data or QoS data excluding null packets or ACKs. From 
-those packets it will extract the destination address and will add it to a dictionary. 
+After the for loop the program will have all the lists ready to print the retrieved data.
+First of all we print the total capture duration, the total bytes processed and the total 
+packets exchanged. Than for each MAC address registered during the processing time we print
+the vendor to which it belongs to, retrieved using the IEEE standard file, and all the 
+data retrieved during the capture. Those data are also plotted in three graphs using matplotlib.
+The first two graphs shows some histograms about received and transmitted bytes and packets for
+all the registered MAC addresses. In order to plot only relevant information we decided to set
+a variable called \texttt{plot\_ratio} used to plot only MAC addresses which have transmitted
+or received at least plot\_ratio\% packets compared to the MAC address which sent or received 
+the maximum amount in the capture.\\
+The last graph will show the traffic curve of the the received and the transmitted packets.
