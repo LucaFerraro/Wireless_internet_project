@@ -84,13 +84,6 @@ def convertMACAddress(mac):
 
 # if no additional arguments are provided it will run a default capture (testing purposes)
 if (len(sys.argv) == 1):
-    #cap = pyshark.FileCapture('Wireless_internet_project/MAC_count2.pcapng')
-    #cap = pyshark.FileCapture('Wireless_internet_project/Sunday_morning_capture_MILAN.pcapng')
-    #cap = pyshark.FileCapture('Wireless_internet_project/Data_try.pcapng')
-    #cap = pyshark.FileCapture('Wireless_internet_project/Monday_afternoon_capture_try_LIVORNO.pcapng')
-    #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_first2min.pcapng')
-    #cap = pyshark.FileCapture('Wireless_internet_project/Multimedia_internet_monday_middle.pcapng')
-    #cap = pyshark.FileCapture('Wireless_internet_project/Filtered_capture_WEDNESDAY_MILAN.pcapng')
     cap = pyshark.FileCapture(os.path.join(sys.path[0],"Filtered_capture_WEDNESDAY_MILAN.pcapng"))
 
 # if -file "PATH TO FILE" is provided, the program will launch the program on the provided capture
@@ -145,7 +138,7 @@ for packet in cap:
     # Handles malformed packets:
     try: 
 
-        # Entering only if data (type = 2) but not no data:
+        # Entering only if type is Data or QoS Data but not no data:
         if((int(packet.wlan.fc_type) == 2) and 
             ((int(packet.wlan.fc_subtype) >= 0 and int(packet.wlan.fc_subtype) <= 3)) or
             (int(packet.wlan.fc_subtype) >= 8 and int(packet.wlan.fc_subtype) <= 11)):

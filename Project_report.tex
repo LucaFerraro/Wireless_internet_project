@@ -5,8 +5,27 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{subcaption}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+% \usepackage[utf8]{inputenc}
+% \usepackage[T1]{fontenc}
+\usepackage{listings} %package to import code
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{green},
+    keywordstyle=\color{url_blue},
+    stringstyle=\color{orange},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
 
 \usepackage{titling}
 \renewcommand\maketitlehooka{\null\mbox{}\vfill}
@@ -21,6 +40,7 @@
 
 \begin{document}
 \definecolor{url_blue}{rgb}{0,0.427,0.639} %rgb: 0, 109, 163 
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
 \begin{titlingpage}
     \maketitle
@@ -29,23 +49,22 @@
 \newpage{}
 
 \tableofcontents
-
+\listoffigures
+\lstlistoflistings
 \newpage{}
 
 %------------------------------------------------------------------------------------------------------------------------------------------------
 \clearpage
-{\section{Introduction}\label{sect:introduction}}
+\section{Introduction}
+\label{sect:introduction}
 \input{Introduction.tex}
 
 
 %------------------------------------------------------------------------------------------------------------------------------------------------
 \clearpage
-{\section{Project description}\label{sect:project}}
+\section{Project description}
+\label{sect:project}
 \input{Project_description.tex}
-
-
-
-
 
 
 \end{document}
