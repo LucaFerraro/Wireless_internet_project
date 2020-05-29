@@ -1,15 +1,8 @@
-% Descrivere cosa c'è di interessante nella cattura evidenziando i MAC che conosciamo, quelli che 
-% fanno cose che abbiamo capito (ad esempio i sonos oppure i dispositivi che usano zoom) e inserire
-% le immagini come contorno
-
-<<<<<<< HEAD
 To test our program we did some captures in different moments of the day to see what we are able to 
 understand from it.
+
+
 \subsection{Sonos speakers interconnected via WiFi}
-=======
-\subsection{Sonos capture.}
->>>>>>> 370de4e35883f001c1c6d3fcf0493189a25769a1
-%Fabio
  A capture that brought something interesting to our attention is the \texttt{Filtered
 \_capture\_SONOS\_WEDNESDAY\_MILAN.pcapng} done in Milan on a wednesday morning. Thanks to the vendor 
 classification we spotted a four MAC addresses related to \textbf{Sonos} devices, a vendor famous for
@@ -32,28 +25,20 @@ the Sonos devices and other communication flows.
 \end{figure}
 \\
 To further show how many packets the Sonos devices exchanged we can see that three out of the four
-devices are at the top spots of the following graph.
+devices are at the top spots of the following graph (\ref{fig:Sonos_packets}).
 \begin{figure}[h]
     \includegraphics[width=\textwidth]{Graphs/SONOS_bytes_packets.png}
     \caption{Sonos packets exchanged}
     \label{fig:Sonos_packets}
 \end{figure}
 
-<<<<<<< HEAD
 
- 
-\subsection{ZOOM}
-=======
-\subsection{Zoom captures.}
->>>>>>> 370de4e35883f001c1c6d3fcf0493189a25769a1
-%Fabio
-
-\subsection{Multimedia internet capture.}
+\subsection{Multimedia internet capture}
 In this paragraph, we analyze the results obtained with a capture performed during a lecture of
 multimedia internet. \\ 
 The lecture has been followed using \textit{Microsoft\ Teams}: the professor was presenting the
 topic sharing its screen and all the students were following him with camera and microphone inactive.\\
-In the Figure \ref{Multimedia internet lecture: data and packets exchanged.}, we can see on the
+In the Figure \ref{fig:Multimedia internet lecture: data and packets exchanged.}, we can see on the
 left the graphs reporting the number of bytes transmitted and received by some of the \textit{MACs}
 we have revealed and on the right the number of transmitted and received by the same \textit{MACs}.\\
 As we can see, there are some \textit{MACs} that are exchanging much more traffic than others:
@@ -84,13 +69,36 @@ being used for smart-working purposes.s
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=\linewidth]{/Users/lucaferraro/Desktop/PoliMi/First_year/Wireless_networks/Wirelesss_internet/Wireless_internet_project/Graphs/Multimedia_internet_bytes_packets.png}
+    \includegraphics[width=\linewidth]{Graphs/Multimedia_internet_bytes_packets.png}
     \caption{Multimedia internet lecture: data and packets exchanged.}
     \label{fig:Multimedia internet lecture: data and packets exchanged.}
 \end{figure}
 
 
+\subsection{Zoom capture}
+In this capture we were able to capture a really big flow of data due to a Zoom call activated from 
+one of our known devices, as we can see in Figure \ref{fig:Zoom_packets} there are two devices which
+creates most of the traffic are:
+\begin{itemize}
+    \item \textbf{8c:85:90:b1:bc:76}: A MacBook from which the call is activated 
+    \item \textbf{20:b0:01:22:22:66}: The router to which the MacBook is connected 
+\end{itemize}
+Since all the devices involved were known, we were able to pair the result of the analysis with our 
+knowledge on what was really being done at the moment to assign a real meaning to the packets flow 
+captured. In this case most of the packets on the client side come from downlink since the client 
+has to receive data on video and audio of all the other participants to the call. On the other hand
+the router is sending all those messages to the client so it will register an intense uplink traffic.
+We can also see that the number of uplink packets in the router is bigger than the number of downlink
+packets sent by the MacBook since also other devices were connected to the same network at the same
+time. 
+\begin{figure}[h!]
+    \includegraphics[width=\textwidth]{Graphs/Zoom_bytes_packets.png}
+    \caption{Zoom packets exchanged}
+    \label{fig:Zoom_packets}
+\end{figure}
 
 
-\subsection{Launch time capture.}
+
+
+\subsection{Launch time capture}
 %Luca
