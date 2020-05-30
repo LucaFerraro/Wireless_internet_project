@@ -1,10 +1,10 @@
 The aim of this project is using the protocol analyzer \textit{Wireshark} for classifying traffic at \textit{MAC} layer.\\ 
 To reach this goal, we used \textit{Wireshark} in \textit{monitor\ mode}: in this mode, the \textit{WiFi} module of our PC
 intercepts all the traffic in range that is transiting via \textit{WiFi}.\\ 
-This is a limitation is the sense that at \textit{MAC} layer it's possible to check whether a frame is transporting data, but it's not 
-possible to distinguish the application that has generated the data carried in the payload of the frame. Therefore, our 
+This is a limitation for our project in the sense that at \textit{MAC} layer it's possible to check whether a frame is transporting data, but it's 
+not possible to distinguish the application that has generated the data carried in the payload of the frame. Therefore, our 
 analysis only provides a quantitative estimation of the traffic of data transported over \textit{WiFi}. The reason why we have 
-used this solution even if we were aware of this fact is that working in \textit{monitor\ mode} is the only solution we had
+used this solution even if we were aware of this limitation is that working in monitor mode is the only solution we had
 to sniff traffic that was not meant only for the computer that was performing the capure.\\
 
 \subsection{{Our analysis.}}

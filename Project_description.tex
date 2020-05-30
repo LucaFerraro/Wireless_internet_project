@@ -1,29 +1,30 @@
 \subsection{Program setup}
-To launch and use the program, first some pre-requisites have to be meet:
+To launch and use the program, first some pre-requisites have to be met:
 \begin{itemize}
-    \item install pyshark library in order to analyze the capture file 
-    \item install numpy library to perform some numerical analysis
-    \item install matplotlib library to visualize plots
+    \item install \textit{pyshark} library in order to analyze the capture file.
+    \item install \textit{numpy} library to perform some numerical analysis.
+    \item install \textit{matplotlib} library to visualize plots.
 \end{itemize}
 The program can run in 3 different modes selected by adding an attribute to the standard 
-python call, using the command \texttt{python Traffic\_analyzer.py -file "PATH TO A FILE"} 
+python call.\\
+Using the command \texttt{python Traffic\_analyzer.py -file "PATH TO A FILE"} 
 the program will scan the file provided after the \textit{-file} parameter. In this mode the program
 will open the selected capture (in a .pcap/.pcapng format) and start scanning all the packets in 
 order to obtain some information. 
 
-The second mode is the live capturing mode in which, using the command \texttt{sudo python
-Traffic\_analyzer.py -live "INTERFACE" "DURATION"} the program will first start a 
-capture on the given interface,that has to be enabled to work in monitor mode, for a given 
+The second mode is the live capturing mode: using the command \texttt{sudo python
+Traffic\_analyzer.py -live "INTERFACE" "DURATION"}, the program will first start a 
+capture on the given interface, that has to be enabled to work in monitor mode, for a given 
 amount of time provided with the "DURATION" attribute, will save this capture and will work
-on it. With this mode administrator privileges are required to allow tshark to start the 
+on it. With this mode administrator privileges are required to allow \textit{tshark} to start the 
 capture in monitor mode.  
 
 The last mode is a default mode, launched using the command \texttt{python Traffic\_analyzer.py},
 which will perform the analysis on a default capture inserted in the code. This mode is mostly 
-used as a debug tool but can also be useful to understand how the output will look like.
+used as a debug tool but can also be useful to understand how the output of the program looks like.
 
 \subsection{Program structure}
-To obtain information from a capture, the code will run a for loop on all the packets in the 
+To obtain information from a capture, the code will run a \textit{for} loop on all the packets in the 
 capture file and will analyze only those which can be useful for our purpose. To select the 
 useful the following filter is used:
 
@@ -34,10 +35,10 @@ useful the following filter is used:
         (int(packet.wlan.fc_subtype) >= 8 and 
         int(packet.wlan.fc_subtype) <= 11)
 \end{lstlisting}
-it will select all the \textbf{data} frames (\texttt{wlan.fc\_type == 2}) and among those it will 
-select the ones actually containing data or QoS data excluding null packets or ACKs. From 
-those packets it will extract the destination address and will add it to a dictionary
-which will store the number of bytes extracted from the \texttt{packet.data.len} and 
+Thi filter selects all the \textit{data} frames (\texttt{wlan.fc\_type == 2}) and among those it will 
+select the ones actually containing \textit{data} or \textit{QoS data}, excluding null packets or ACKs. 
+From those packets, the program will extract the destination address and add it to a dictionary
+which will store the number of bytes in the packet, extracted from its \texttt{packet.data.len} field, and 
 the number of packets received and transmitted by this MAC during the capture.
 Then it will try to extract, if present, the source address and store information the same 
 way. During the development phase we noticed that the source address (\texttt{wlan.packet.sa}) was 
@@ -63,14 +64,14 @@ interval is correct, the counters are updated, otherwise a new time slot is crea
     nPacket = nPacket + 1
 \end{lstlisting}
 
-After the for loop the program will have all the lists ready to print the retrieved data.
-First of all we print the total capture duration, the total bytes processed and the total 
-packets exchanged. Than for each MAC address registered during the processing time we print
-the vendor to which it belongs to, retrieved using the IEEE standard file, and all the 
+After the for loop the program will have all the lists ready to print the retrieved data.\\ 
+First of all we print the total capture duration, the total number of bytes processed and the total 
+number of packets exchanged. Than for each MAC address registered during the processing of the capture, 
+we print the vendor to which it belongs to, retrieved using the IEEE standard file, and all the 
 data retrieved during the capture. Those data are also plotted in three graphs using matplotlib.
-The first two graphs shows some histograms about received and transmitted bytes and packets for
-all the registered MAC addresses. In order to plot only relevant information we decided to set
-a variable called \texttt{plot\_ratio} used to plot only MAC addresses which have transmitted
-or received at least plot\_ratio\% packets compared to the MAC address which sent or received 
-the maximum amount in the capture.\\
-The last graph will show the traffic curve of the the received and the transmitted packets.
+The first two graphs show some histograms about received and transmitted bytes and packets for
+some of the registered MAC addresses; we decided not to insert all of them because we wanted to plot 
+only relevant information. To do this, we used a variable called \texttt{plot\_ratio}: only the data relavite to 
+the \textit{MAC} addresses that have transmitted or received at least plot\_ratio\% packets compared to the 
+\textit{MAC} address which sent or received the maximum amount in the capture are plotted in the histograms.\\
+The last graphs show the traffic curve of the the received and the transmitted packets.
