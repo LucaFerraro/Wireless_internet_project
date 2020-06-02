@@ -2,12 +2,12 @@ The aim of this project is using the protocol analyzer \textit{Wireshark} for cl
 To reach this goal, we used \textit{Wireshark} in \textit{monitor\ mode}: in this mode, the \textit{WiFi} module of our PC
 intercepts all the traffic in range that is transiting via \textit{WiFi}.\\ 
 This is a limitation for our project in the sense that at \textit{MAC} layer it's possible to check whether a frame is transporting data, but it's 
-not possible to distinguish the application that has generated the data carried in the payload of the frame. Therefore, our 
+not possible to distinguish the application that has generated the data carried in the frame payload. Therefore, our 
 analysis only provides a quantitative estimation of the traffic of data transported over \textit{WiFi}. The reason why we have 
 used this solution even if we were aware of this limitation is that working in monitor mode is the only solution we had
-to sniff traffic that was not meant only for the computer that was performing the capure.\\
+to sniff traffic that was not meant only for the device that was performing the capture.\\
 
-\subsection{{Our analysis.}}
+\subsection{{Our analysis}}
     In this project, what we have done is looking at the \textit{data} and \textit{QoS data} frames captured by our computers and
     try to understand what those packets are meant to in terms of type of application that has generated them. As specified, this 
     can only be a deduction: we can't be sure of the application that has generated a packet at \textit{MAC} layer.\\ 
